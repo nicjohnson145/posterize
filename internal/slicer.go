@@ -33,7 +33,7 @@ type Slicer struct {
 	maxPageShortSide float64
 }
 
-func (s *Slicer) ImageFromBytes(input []byte) (image.Image, error) {
+func (s *Slicer) imageFromBytes(input []byte) (image.Image, error) {
 	s.log.Debug().Msg("decoding image to determine type")
 	_, imgType, err := image.Decode(bytes.NewReader(input))
 	if err != nil {
@@ -47,6 +47,18 @@ func (s *Slicer) ImageFromBytes(input []byte) (image.Image, error) {
 	default:
 		return nil, fmt.Errorf("unable to process image type of %v", imgType)
 	}
+}
+
+func (s *Slicer) Slice(input []byte) ([]image.Image, error) {
+	img, err := s.imageFromBytes(input)
+	if err != nil {
+		return nil, fmt.Errorf("error converting to image.Image: %w", err)
+	}
+
+	boxes := s.getBoundingBoxes(float64(img.Bounds().Dx()), float64(img.Bounds().Dy()))
+
+	images := s.sliceImage(img, boxes)
+	return images, nil
 }
 
 func (s *Slicer) getBoundingBoxes(width float64, height float64) []BoundingBox {
@@ -92,4 +104,25 @@ func (s *Slicer) getBoundingBoxes(width float64, height float64) []BoundingBox {
 	}
 
 	return boxes
+}
+
+func (s *Slicer) sliceImage(srcImg image.Image, boxes []BoundingBox) []image.Image {
+	newImages := []image.Image{}
+
+	for _, bb := range boxes {
+		newImg := image.NewRGBA(image.Rectangle{
+			image.Point{X: bb.TopLeft.X, Y: bb.TopLeft.Y},
+			image.Point{X: bb.BottomRight.X, Y: bb.BottomRight.Y},
+		})
+
+		for x := bb.TopLeft.X; x <= bb.BottomRight.X; x++ {
+			for y := bb.TopLeft.Y; y <= bb.BottomRight.Y; y++ {
+				newImg.Set(x, y, srcImg.At(x, y))
+			}
+		}
+
+		newImages = append(newImages, newImg)
+	}
+
+	return newImages
 }
