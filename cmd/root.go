@@ -47,7 +47,7 @@ func Root() *cobra.Command {
 
 			log.Debug().Msg("writing images")
 			for i, img := range images {
-				name := fmt.Sprintf("%v-%v.png", viper.GetString(config.OutputPrefix), i)
+				name := fmt.Sprintf("%v-%02d.png", viper.GetString(config.OutputPrefix), i)
 				f, err := os.Create(name)
 				if err != nil {
 					log.Err(err).Str("name", name).Msg("error creating output file")

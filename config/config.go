@@ -15,8 +15,9 @@ const (
 	PixelsPerInch = "pixels-per-inch"
 	OutputPrefix = "output-prefix"
 
-	DefaultMaxImageLongSide = 10.5
-	DefaultMaxImageShortSide = 8.0
+	// These measurements discovered by just printing on my printer and measuring the gap
+	DefaultMaxImageLongSide = 10.625
+	DefaultMaxImageShortSide = 8.125
 	DefaultPixelsPerInch = 100
 	DefaultOutputPrefix = "img"
 )
